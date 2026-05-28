@@ -257,3 +257,6 @@ Thumbs.db
 # Environment variables
 *.env
 .env.*
+
+#alembic 
+alembic/versions/__pycache__/
