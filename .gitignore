@@ -216,3 +216,44 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.env
+venv/
+.venv/
+
+# FastAPI / SQLAlchemy
+*.db
+*.sqlite3
+
+# Alembic
+alembic/versions/*.pyc
+
+# Data files (AER/Petrinex CSVs are large, don't commit them)
+*.csv
+*.zip
+*.txt
+data/
+
+# React / Node
+frontend/node_modules/
+frontend/.env
+frontend/dist/
+frontend/build/
+
+# VS Code
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker
+*.log
+
+# Environment variables
+*.env
+.env.*
