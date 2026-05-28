@@ -4,7 +4,7 @@ from app.database import Base
 class Forecast(Base):
     __tablename__ = "forecast"
 
-    uwi = Column(String, ForeignKey("well.uwi"))
+    uwi = Column(String, ForeignKey("wells.uwi"))
     id = Column(String, primary_key=True, index=True)
     qi = Column(Float, nullable = False)
     di = Column(Float, nullable = False)
