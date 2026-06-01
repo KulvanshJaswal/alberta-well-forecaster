@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from app.routers import wells
 
 app = FastAPI(
     title="Alberta Well Forecaster",
@@ -6,10 +7,4 @@ app = FastAPI(
     version="0.1.0"
 )
 
-@app.get("/")
-def root():
-    return {"message": "Alberta Well Forecaster API is running"}
-
-@app.get("/health")
-def health_check():
-    return {"status": "healthy"}
+app.include_router(wells.router)
