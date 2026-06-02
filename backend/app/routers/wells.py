@@ -9,6 +9,6 @@ router = APIRouter()
 def get_wells(db: Session = Depends(get_db)):
     return get_all_wells(db)
 
-@router.get("/wells/{uwi}")
-def get_well(uwi: str, db: Session = Depends(get_db)):
+@router.get("/wells/{uwi:path}")
+def get_well_endpoint(uwi: str, db: Session = Depends(get_db)):
     return get_well(db, uwi)
