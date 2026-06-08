@@ -109,5 +109,6 @@ def ingest_petrinex_files():
 
 
 if __name__ == "__main__":
+    download_petrinex_files()
     print("Ingesting into database...")
     ingest_petrinex_files()
