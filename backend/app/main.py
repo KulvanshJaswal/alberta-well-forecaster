@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from app.routers import wells
+from app.routers import wells, production
 
 app = FastAPI(
     title="Alberta Well Forecaster",
@@ -8,3 +8,5 @@ app = FastAPI(
 )
 
 app.include_router(wells.router)
+
+app.include_router(production.router)
