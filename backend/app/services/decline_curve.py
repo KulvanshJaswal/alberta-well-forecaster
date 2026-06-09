@@ -61,3 +61,30 @@ def calculate_eur(qi, Di, b):
         return None
     
     return result
+
+def detect_anomalies(production_data, qi, Di, b, product):
+    actual_values = [getattr(record, product) for record in production_data]
+    time_steps = list(range(len(production_data)))
+    
+
+    predicted_values = [arps_equation(t, qi, Di, b) for t in time_steps]
+    
+
+    residuals = [actual - predicted for actual, predicted in zip(actual_values, predicted_values)]
+    
+
+    mean = np.mean(residuals)
+    std = np.std(residuals)
+    
+
+    anomalies = []
+    for i, (record, residual) in enumerate(zip(production_data, residuals)):
+        if abs(residual - mean) > 2 * std:
+            anomalies.append({
+                "month": str(record.month),
+                "actual": actual_values[i],
+                "predicted": predicted_values[i],
+                "deviation": residual
+            })
+    
+    return anomalies
