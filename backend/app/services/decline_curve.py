@@ -40,3 +40,24 @@ def forecast_production(qi, Di, b, months=12):
     for i in range (1, months+1):
         plot_values.append(arps_equation(i, qi, Di, b))
     return plot_values
+
+def calculate_eur(qi, Di, b):
+    if Di <= 0:
+        return None
+    
+    if b == 0:
+        result = qi / Di
+    elif b == 1:
+        q_limit = 1.0
+        if qi <= q_limit:
+            return 0.0
+        result = (qi / Di) * np.log(qi / q_limit)
+    else:
+        result = qi / (Di * (1 - b))
+
+    #if Di is very low eur will be very high
+    #sanity check
+    if result > 100_000_000 or result < 0:
+        return None
+    
+    return result

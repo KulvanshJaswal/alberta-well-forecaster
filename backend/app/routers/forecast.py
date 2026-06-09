@@ -1,4 +1,4 @@
-from app.services.decline_curve import fit_decline_curve, forecast_production
+from app.services.decline_curve import fit_decline_curve, forecast_production, calculate_eur
 from app.crud.production import get_well_production
 from app.database import get_db
 from fastapi import APIRouter, Depends
@@ -21,7 +21,16 @@ def get_uwi_forecast(uwi, db: Session = Depends(get_db)):
         else:
             plot_values.append(forecast_production(*record))
     return {
-        "oil": plot_values[0],
-        "gas": plot_values[1],
-        "water": plot_values[2]
+        "oil": {
+            "forecast": plot_values[0],
+            "eur": calculate_eur(*well_production["oil"]) if well_production["oil"] else None 
+        },
+        "gas":{
+            "forecast": plot_values[1],
+            "eur": calculate_eur(*well_production["gas"]) if well_production["gas"] else None 
+        },
+        "water":{
+            "forecast": plot_values[2],
+            "eur": calculate_eur(*well_production["water"]) if well_production["water"] else None 
+        },
     }
