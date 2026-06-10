@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { getWells } from '../api/client';
 import WellMap from '../components/WellMap';
 import { statusColorClass } from '../utils/status';
+import { formatLicensee } from '../utils/format';
 
 export default function WellList() {
   const [wells, setWells] = useState([]);
@@ -23,6 +24,17 @@ export default function WellList() {
       w.uwi.toLowerCase().includes(search.toLowerCase()) ||
       (w.licensee || '').toLowerCase().includes(search.toLowerCase()) ||
       (w.status || '').toLowerCase().includes(search.toLowerCase())
+  );
+
+  const statusCounts = wells.reduce(
+    (acc, w) => {
+      if (w.status === 'ABD') acc.ABD++;
+      else if (w.status === 'SUSP') acc.SUSP++;
+      else if (w.status === 'PUMP') acc.PUMP++;
+      else acc.other++;
+      return acc;
+    },
+    { ABD: 0, SUSP: 0, PUMP: 0, other: 0 }
   );
 
   return (
@@ -51,6 +63,15 @@ export default function WellList() {
         {error && <p className="error">{error}</p>}
 
         {!loading && !error && (
+          <div className="status-summary">
+            <span className="status-summary-item"><span className="status-dot status-red" /> ABD: {statusCounts.ABD}</span>
+            <span className="status-summary-item"><span className="status-dot status-yellow" /> SUSP: {statusCounts.SUSP}</span>
+            <span className="status-summary-item"><span className="status-dot status-green" /> PUMP: {statusCounts.PUMP}</span>
+            <span className="status-summary-item"><span className="status-dot status-grey" /> Other: {statusCounts.other}</span>
+          </div>
+        )}
+
+        {!loading && !error && (
           <div className="table-wrap">
             <table className="well-table">
               <thead>
@@ -68,7 +89,7 @@ export default function WellList() {
                     onClick={() => navigate(`/wells/${encodeURIComponent(w.uwi)}`)}
                   >
                     <td className="mono">{w.uwi}</td>
-                    <td>{w.licensee}</td>
+                    <td>{formatLicensee(w.licensee)}</td>
                     <td>
                       <span className={`status-dot ${statusColorClass(w.status)}`} />
                       {w.status}

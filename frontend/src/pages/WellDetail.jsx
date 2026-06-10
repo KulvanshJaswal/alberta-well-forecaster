@@ -4,6 +4,7 @@ import { getWell, getProduction, getForecast } from '../api/client';
 import ProductionChart from '../components/ProductionChart';
 import ForecastChart from '../components/ForecastChart';
 import { statusColorClass } from '../utils/status';
+import { formatLicensee } from '../utils/format';
 
 const FLUIDS = [
   { key: 'oil', label: 'Oil', color: '#00bb7f' },
@@ -75,7 +76,7 @@ export default function WellDetail() {
         </div>
         <div className="info-row">
           <span className="info-label">Licensee</span>
-          <span className="info-value">{well.licensee}</span>
+          <span className="info-value">{formatLicensee(well.licensee)}</span>
         </div>
         <div className="info-row">
           <span className="info-label">Status</span>

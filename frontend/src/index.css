@@ -74,6 +74,46 @@ a { color: inherit; }
 /* Map */
 .map-section { margin-bottom: 28px; }
 
+.map-container-wrap {
+  position: relative;
+  height: 380px;
+  border-radius: 8px;
+  overflow: hidden;
+}
+.map-container-wrap .leaflet-container {
+  height: 100% !important;
+  width: 100% !important;
+}
+.map-container-wrap.map-fullscreen {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 100vh;
+  z-index: 1000;
+  border-radius: 0;
+  background: var(--bg);
+}
+.map-fullscreen-toggle {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 1100;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+}
+.map-fullscreen-toggle:hover { color: var(--text); border-color: var(--text-muted); }
+
 /* Table toolbar */
 .table-toolbar {
   display: flex;
@@ -97,6 +137,17 @@ a { color: inherit; }
 }
 .search-input:focus { border-color: var(--accent); }
 .search-input::placeholder { color: var(--text-muted); }
+
+/* Status summary bar */
+.status-summary {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+.status-summary-item { display: flex; align-items: center; }
 
 /* Table */
 .table-wrap { overflow-x: auto; border-radius: var(--radius); border: 1px solid var(--border); }
@@ -132,9 +183,19 @@ a { color: inherit; }
   position: relative;
   top: -1px;
 }
-.status-green { background: var(--green); }
-.status-red   { background: var(--red); }
-.status-grey  { background: var(--text-muted); }
+.status-green  { background: var(--green); }
+.status-red    { background: var(--red); }
+.status-yellow { background: var(--amber); }
+.status-grey   { background: var(--text-muted); }
+
+/* Map cluster theming */
+.marker-cluster-small, .marker-cluster-medium, .marker-cluster-large {
+  background-color: rgba(20, 71, 230, 0.25);
+}
+.marker-cluster-small div, .marker-cluster-medium div, .marker-cluster-large div {
+  background-color: var(--accent);
+  color: #fff;
+}
 
 /* Monospace text */
 .mono { font-family: 'Courier New', Courier, monospace; font-size: 0.82rem; }
