@@ -11,7 +11,7 @@ import requests
 import zipfile
 import io
 
-output_dir = "../data/ST37_SH"
+output_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "ST37_SH")
 
 def upsert_well(db, well_data):
     stmt = insert(Well).values(**well_data)
@@ -29,7 +29,13 @@ def upsert_well(db, well_data):
 def download_files():
     os.makedirs(output_dir, exist_ok=True)
 
-    response = requests.get("https://www.aer.ca/documents/sts/st37/SurfaceHolesShapefile.zip")
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+    }
+
+    # Shapefile
+    response = requests.get("https://www.aer.ca/documents/sts/st37/SurfaceHolesShapefile.zip", headers=headers)
+    print(f"Shapefile download status: {response.status_code}")
     if response.ok:
         with zipfile.ZipFile(io.BytesIO(response.content), "r") as zip_file:
             for name in zip_file.namelist():
@@ -37,18 +43,26 @@ def download_files():
                 if not filename:
                     continue
                 data = zip_file.read(name)
-                with open(f"{output_dir}/{filename}", "wb") as f:
+                with open(os.path.join(output_dir, filename), "wb") as f:
                     f.write(data)
+        print("Shapefile extracted successfully")
+    else:
+        print(f"Shapefile download failed: {response.status_code}")
 
-    response = requests.get("https://www.aer.ca/documents/sts/st37/ST37.zip")
+    # WellList
+    response = requests.get("https://www.aer.ca/documents/sts/st37/ST37.zip", headers=headers)
+    print(f"WellList download status: {response.status_code}")
     if response.ok:
         with zipfile.ZipFile(io.BytesIO(response.content), "r") as zip_file:
             for name in zip_file.namelist():
                 if "WellList" in name and not name.endswith("/"):
                     data = zip_file.read(name)
-                    with open(f"{output_dir}/WellList.txt", "wb") as f:
+                    with open(os.path.join(output_dir, "WellList.txt"), "wb") as f:
                         f.write(data)
+                    print("WellList.txt extracted successfully")
                     break
+    else:
+        print(f"WellList download failed: {response.status_code}")
 
 download_files()
 
