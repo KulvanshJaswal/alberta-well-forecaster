@@ -19,6 +19,7 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
+    op.drop_table('production')
     op.create_table('production',
         sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
         sa.Column('uwi', sa.String(), nullable=True),
