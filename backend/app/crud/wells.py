@@ -4,9 +4,9 @@ from sqlalchemy import or_
 def get_well(db: Session, uwi):
     return db.query(Well).filter(Well.uwi == uwi).first()
 
-def get_all_wells(db: Session, skip: int = 0, limit: int = 100, search: str | None = None):
+def get_all_wells(db: Session, skip: int = 0, limit: int = 100, search: str | None = None, status: str | None = None):
     query = db.query(Well)
-    
+
     if search:
         query = query.filter(
             or_(
@@ -15,5 +15,8 @@ def get_all_wells(db: Session, skip: int = 0, limit: int = 100, search: str | No
                 Well.status.ilike(f"%{search}%")
             )
         )
+
+    elif status:
+        query = query.filter(Well.status == status)
     
     return query.offset(skip).limit(limit).all()

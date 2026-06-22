@@ -6,8 +6,8 @@ from sqlalchemy.orm import Session
 router = APIRouter()
 
 @router.get("/wells")
-def get_wells(skip: int = 0, limit: int = 100, search:str|None = None, db: Session = Depends(get_db)):
-    return get_all_wells(db, skip, limit, search)
+def get_wells(skip: int = 0, limit: int = 100, search:str|None = None, status:str|None = None, db: Session = Depends(get_db)):
+    return get_all_wells(db, skip, limit, search, status)
 
 @router.get("/wells/{uwi:path}")
 def get_well_endpoint(uwi: str, db: Session = Depends(get_db)):
