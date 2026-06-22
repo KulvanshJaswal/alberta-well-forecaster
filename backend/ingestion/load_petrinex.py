@@ -69,7 +69,11 @@ def ingest_petrinex_files():
         print(f"Processing {filename}...")
         df = pd.read_csv(f"{output_dir}/{filename}", low_memory=False)
 
+
+        commit_counter = 0
+
         for index, row in df.iterrows():
+            
             petrinex_id = str(row["FromToID"]).strip()
 
             if petrinex_id not in uwi_lookup:
@@ -91,7 +95,7 @@ def ingest_petrinex_files():
 
             if existing:
                 setattr(existing, product, volume)
-                db.commit()
+                commit_counter += 1
             else:
                 new_record = Production(
                     uwi=uwi,
@@ -101,9 +105,13 @@ def ingest_petrinex_files():
                     water=volume if product == "water" else 0.0
                 )
                 db.add(new_record)
+                commit_counter += 1
+            
+            if commit_counter == 1000:
+                commit_counter = 0
                 db.commit()
-                print("commited")
 
+    db.commit()
     db.close()
     print("Ingestion complete.")
 
