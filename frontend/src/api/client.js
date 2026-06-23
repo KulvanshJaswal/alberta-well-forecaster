@@ -2,8 +2,8 @@ import axios from 'axios';
 
 const client = axios.create({ baseURL: 'http://localhost:8000' });
 
-export const getWells = (limit = 100, skip = 0) =>
-  client.get('/wells', { params: { limit, skip } });
+export const getWells = ({ limit = 100, skip = 0, search, status } = {}) =>
+  client.get('/wells', { params: { limit, skip, search, status } });
 
 export const getWell = (uwi) =>
   client.get(`/wells/${encodeURIComponent(uwi)}`);

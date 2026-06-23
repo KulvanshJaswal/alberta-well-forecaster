@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getWells } from '../api/client';
 import WellMap from '../components/WellMap';
@@ -11,20 +11,29 @@ export default function WellList() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
+  const debounceRef = useRef(null);
 
   useEffect(() => {
-    getWells(100)
-      .then((res) => setWells(res.data))
-      .catch(() => setError('Failed to load wells. Is the backend running?'))
-      .finally(() => setLoading(false));
-  }, []);
+    clearTimeout(debounceRef.current);
 
-  const filtered = wells.filter(
-    (w) =>
-      w.uwi.toLowerCase().includes(search.toLowerCase()) ||
-      (w.licensee || '').toLowerCase().includes(search.toLowerCase()) ||
-      (w.status || '').toLowerCase().includes(search.toLowerCase())
-  );
+    if (search === '') {
+      setLoading(true);
+      getWells({ status: 'PUMP', limit: 100 })
+        .then((res) => setWells(res.data))
+        .catch(() => setError('Failed to load wells. Is the backend running?'))
+        .finally(() => setLoading(false));
+    } else {
+      debounceRef.current = setTimeout(() => {
+        setLoading(true);
+        getWells({ search, limit: 100 })
+          .then((res) => setWells(res.data))
+          .catch(() => setError('Failed to load wells. Is the backend running?'))
+          .finally(() => setLoading(false));
+      }, 300);
+    }
+
+    return () => clearTimeout(debounceRef.current);
+  }, [search]);
 
   const statusCounts = wells.reduce(
     (acc, w) => {
@@ -49,7 +58,7 @@ export default function WellList() {
 
       <section className="table-section">
         <div className="table-toolbar">
-          <span className="well-count">Showing first {wells.length} wells</span>
+          <span className="well-count">Showing {wells.length} wells</span>
           <input
             className="search-input"
             type="text"
@@ -82,7 +91,7 @@ export default function WellList() {
                 </tr>
               </thead>
               <tbody>
-                {filtered.map((w) => (
+                {wells.map((w) => (
                   <tr
                     key={w.uwi}
                     className="well-row"
@@ -96,7 +105,7 @@ export default function WellList() {
                     </td>
                   </tr>
                 ))}
-                {filtered.length === 0 && (
+                {wells.length === 0 && (
                   <tr>
                     <td colSpan={3} className="no-data">No matching wells.</td>
                   </tr>
