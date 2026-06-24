@@ -12,6 +12,7 @@ import pandas as pd
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 from sqlalchemy.dialects.postgresql import insert
+from sqlalchemy import func, text
 
 from app.database import get_db
 from app.models.well import Well
@@ -115,8 +116,38 @@ def ingest_petrinex_files():
     db.close()
     print("Ingestion complete.")
 
+def find_newest_available_month():
+    date = datetime.now()
+
+    while True:
+        url = f"https://www.petrinex.gov.ab.ca/publicdata/API/Files/AB/Vol/{date.year}-{date.month:02d}/CSV"
+        response = requests.head(url)
+
+        if response.status_code == 200:
+            return date
+
+        date -= relativedelta(months=1)
+
+
+def cleanup_old_months():
+    db = next(get_db())
+
+    newest_available = find_newest_available_month()
+    db_max = db.query(func.max(Production.month)).scalar()
+
+    gap = (newest_available.year - db_max.year) * 12 + (newest_available.month - db_max.month)
+
+    print(f"Gap detected: {gap} month(s). Deleting oldest {gap} month(s) from production.")
+
+    for i in range(gap):
+        db.execute(text("DELETE FROM production WHERE month = (SELECT MIN(month) FROM production);"))
+
+    db.commit()
+    db.execute(text("VACUUM FULL production;"))
+    db.close()
 
 if __name__ == "__main__":
+    cleanup_old_months()
     download_petrinex_files()
     print("Ingesting into database...")
     ingest_petrinex_files()
