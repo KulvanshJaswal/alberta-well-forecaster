@@ -85,8 +85,9 @@ merged = merged.rename(columns={
 })
 
 db = next(get_db())
-
+count = 0
 for index, row in merged.iterrows():
+
     well_data = {
         "uwi": row["uwi"],
         "licensee": row["licensee"],
@@ -95,5 +96,11 @@ for index, row in merged.iterrows():
         "status": row["status"]
     }
     upsert_well(db, well_data)
+
+    count += 1
+
+    if count == 1000:
+        count = 0
+        db.commit()
 
 db.commit()

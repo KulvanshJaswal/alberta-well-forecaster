@@ -45,7 +45,7 @@ def download_petrinex_files():
                         csv_name = inner_zip.namelist()[0]
                         inner_zip.extract(csv_name, output_dir)
             count += 1
-            if count >= 24:
+            if count >= 18:
                 break
 
         date -= relativedelta(months=1)
@@ -132,8 +132,11 @@ def find_newest_available_month():
 def cleanup_old_months():
     db = next(get_db())
 
-    newest_available = find_newest_available_month()
     db_max = db.query(func.max(Production.month)).scalar()
+    if db_max is None:
+        return
+
+    newest_available = find_newest_available_month()
 
     gap = (newest_available.year - db_max.year) * 12 + (newest_available.month - db_max.month)
 
