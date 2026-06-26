@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const client = axios.create({ baseURL: 'http://localhost:8000' });
+const client = axios.create({ baseURL: process.env.REACT_APP_API_URL || 'http://localhost:8000' });
 
 export const getWells = ({ limit = 100, skip = 0, search, status } = {}) =>
   client.get('/wells', { params: { limit, skip, search, status } });
