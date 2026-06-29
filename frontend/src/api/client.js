@@ -14,4 +14,10 @@ export const getProduction = (uwi) =>
 export const getForecast = (uwi) =>
   client.get(`/forecast/${encodeURIComponent(uwi)}`);
 
+export const getLicensees = (search) =>
+  client.get('/licensees', { params: { search } });
+
+export const getLicenseeSummary = (licensee) =>
+  client.get(`/licensees/${encodeURIComponent(licensee)}`);
+
 export default client;

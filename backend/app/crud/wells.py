@@ -45,4 +45,4 @@ def get_distinct_licensees(db: Session, search: str | None = None):
     else:
         query = db.query(Well.licensee).distinct().all()
 
-    return query
+    return [licensee for (licensee,) in query if licensee is not None]

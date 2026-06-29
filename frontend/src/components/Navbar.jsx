@@ -23,6 +23,15 @@ export default function Navbar() {
             </svg>
             <span>Wells</span>
           </Link>
+          <Link to="/licensees" className="navbar-link">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M3 21h18" />
+              <path d="M6 21V7l6-4 6 4v14" />
+              <path d="M10 21v-6h4v6" />
+            </svg>
+            <span>Licensees</span>
+          </Link>
         </nav>
       </div>
     </header>
