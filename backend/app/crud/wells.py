@@ -36,3 +36,13 @@ def get_licensee_summary(db: Session, licensee: str):
         "total_wells": total_wells,
         "status_breakdown": {status: count for status, count in results}
     }
+
+def get_distinct_licensees(db: Session, search: str | None = None):
+    if search is not None:
+        query = db.query(Well.licensee).distinct().filter(
+            Well.licensee.ilike(f"%{search}%")
+        ).all()
+    else:
+        query = db.query(Well.licensee).distinct().all()
+
+    return query
