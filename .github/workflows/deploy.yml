@@ -23,4 +23,5 @@ jobs:
         with:
           context: ./backend
           push: true
+          no-cache: true
           tags: ${{ secrets.ACR_LOGIN_SERVER }}/alberta-well-forecaster-backend:latest
