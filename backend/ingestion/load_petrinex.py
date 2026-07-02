@@ -118,15 +118,15 @@ def ingest_petrinex_files():
 
 def find_newest_available_month():
     date = datetime.now()
-
-    while True:
+    attempts = 0
+    while attempts < 36:
         url = f"https://www.petrinex.gov.ab.ca/publicdata/API/Files/AB/Vol/{date.year}-{date.month:02d}/CSV"
         response = requests.head(url)
-
         if response.status_code == 200:
             return date
-
         date -= relativedelta(months=1)
+        attempts += 1
+    raise Exception("Could not find a valid Petrinex month after 36 attempts - check network connectivity")
 
 
 def cleanup_old_months():

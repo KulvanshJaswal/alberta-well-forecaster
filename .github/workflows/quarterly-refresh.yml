@@ -13,7 +13,10 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
+        
+      - name: Test Petrinex connectivity
+        run: curl -I "https://www.petrinex.gov.ab.ca/publicdata/API/Files/AB/Vol/2024-01/CSV"
+      
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
