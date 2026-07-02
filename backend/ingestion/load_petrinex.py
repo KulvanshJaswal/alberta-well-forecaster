@@ -121,8 +121,9 @@ def find_newest_available_month():
     attempts = 0
     while attempts < 36:
         url = f"https://www.petrinex.gov.ab.ca/publicdata/API/Files/AB/Vol/{date.year}-{date.month:02d}/CSV"
-        response = requests.head(url)
+        response = requests.get(url, stream=True)
         if response.status_code == 200:
+            response.close()
             return date
         date -= relativedelta(months=1)
         attempts += 1
