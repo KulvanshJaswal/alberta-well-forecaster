@@ -52,8 +52,10 @@ export default function LicenseeSummary() {
     setSummary(null);
   };
 
+  const displayName = (name) => name.replace(/\([A-Za-z0-9]+\)$/, '').trim();
+
   const handleSelect = (name) => {
-    setInputValue(name);
+    setInputValue(displayName(name));
     setSelectedLicensee(name);
     setShowDropdown(false);
   };
@@ -91,7 +93,7 @@ export default function LicenseeSummary() {
                 className="combobox-option"
                 onMouseDown={() => handleSelect(name)}
               >
-                {name}
+                {displayName(name)}
               </div>
             ))}
           </div>
