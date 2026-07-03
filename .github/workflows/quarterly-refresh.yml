@@ -6,28 +6,31 @@ on:
   workflow_dispatch:
 
 jobs:
-  refresh-data:
+  refresh-st37:
     runs-on: ubuntu-latest
     env:
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        
-      - name: Test Petrinex connectivity
-        run: curl -I "https://www.petrinex.gov.ab.ca/publicdata/API/Files/AB/Vol/2024-01/CSV"
-      
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-
-      - name: Install dependencies
-        working-directory: ./backend
+      - working-directory: ./backend
         run: pip install -r requirements.txt
+      - working-directory: ./backend
+        run: python ingestion/load_st37.py
 
-      - name: Run ST37 and Petrinex ingestion
-        working-directory: ./backend
-        run: |
-          python ingestion/load_st37.py
-          python ingestion/load_petrinex.py
+  refresh-petrinex:
+    runs-on: ubuntu-latest
+    needs: refresh-st37
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - working-directory: ./backend
+        run: pip install -r requirements.txt
+      - working-directory: ./backend
+        run: python ingestion/load_petrinex.py
