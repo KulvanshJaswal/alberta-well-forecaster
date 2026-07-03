@@ -108,7 +108,7 @@ export default function LicenseeSummary() {
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
                 <XAxis dataKey="status" stroke="#a1a1a1" tick={{ fontSize: 11 }} />
                 <YAxis stroke="#a1a1a1" tick={{ fontSize: 11 }} allowDecimals={false} />
-                <Tooltip contentStyle={{ backgroundColor: '#171717', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, color: '#fafafa' }} />
+                <Tooltip contentStyle={{ backgroundColor: '#171717', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, color: '#fafafa' }} itemStyle={{ color: '#fafafa' }} labelStyle={{ color: '#fafafa' }} />
                 <Bar dataKey="count">
                   {chartData.map((entry) => (
                     <Cell key={entry.status} fill={statusColorHex(entry.status)} />
