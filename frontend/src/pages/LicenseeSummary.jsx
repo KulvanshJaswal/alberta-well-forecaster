@@ -3,38 +3,34 @@ import { BarChart, Bar, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveCo
 import { getLicensees, getLicenseeSummary } from '../api/client';
 import { statusColorHex } from '../utils/status';
 
+const displayName = (name) => name.replace(/\([A-Za-z0-9]+\)$/, '').trim();
+
 export default function LicenseeSummary() {
   const [inputValue, setInputValue] = useState('');
   const [suggestions, setSuggestions] = useState([]);
-  const [showDropdown, setShowDropdown] = useState(false);
   const [selectedLicensee, setSelectedLicensee] = useState(null);
   const [summary, setSummary] = useState(null);
   const [loadingSummary, setLoadingSummary] = useState(false);
   const [error, setError] = useState(null);
 
   const debounceRef = useRef(null);
-  const blurTimeoutRef = useRef(null);
+
+  const dropdownOpen = inputValue.trim().length > 0 && suggestions.length > 0 && !selectedLicensee;
 
   useEffect(() => {
+    if (selectedLicensee) return;
     clearTimeout(debounceRef.current);
-
-    if (inputValue.trim() === '') {
+    if (!inputValue.trim()) {
       setSuggestions([]);
-      setShowDropdown(false);
       return;
     }
-
     debounceRef.current = setTimeout(() => {
       getLicensees(inputValue)
-        .then((res) => {
-          setSuggestions(res.data);
-          setShowDropdown(true);
-        })
+        .then((res) => setSuggestions(res.data))
         .catch(() => setSuggestions([]));
     }, 300);
-
     return () => clearTimeout(debounceRef.current);
-  }, [inputValue]);
+  }, [inputValue, selectedLicensee]);
 
   useEffect(() => {
     if (!selectedLicensee) return;
@@ -50,18 +46,13 @@ export default function LicenseeSummary() {
     setInputValue(e.target.value);
     setSelectedLicensee(null);
     setSummary(null);
+    setSuggestions([]);
   };
-
-  const displayName = (name) => name.replace(/\([A-Za-z0-9]+\)$/, '').trim();
 
   const handleSelect = (name) => {
     setInputValue(displayName(name));
+    setSuggestions([]);
     setSelectedLicensee(name);
-    setShowDropdown(false);
-  };
-
-  const handleBlur = () => {
-    blurTimeoutRef.current = setTimeout(() => setShowDropdown(false), 150);
   };
 
   const chartData = summary
@@ -82,10 +73,8 @@ export default function LicenseeSummary() {
           placeholder="Search licensee name…"
           value={inputValue}
           onChange={handleInputChange}
-          onFocus={() => suggestions.length > 0 && setShowDropdown(true)}
-          onBlur={handleBlur}
         />
-        {showDropdown && suggestions.length > 0 && (
+        {dropdownOpen && (
           <div className="combobox-dropdown">
             {suggestions.map((name) => (
               <div
