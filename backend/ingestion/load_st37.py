@@ -14,7 +14,7 @@ import io
 output_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "ST37_SH")
 
 def upsert_well(db, well_data):
-    stmt = insert(Well).values(**well_data)
+    stmt = insert(Well).values(well_data)
     stmt = stmt.on_conflict_do_update(
         index_elements=['uwi'],
         set_={
@@ -85,22 +85,22 @@ merged = merged.rename(columns={
 })
 
 db = next(get_db())
-count = 0
+batch = []
 for index, row in merged.iterrows():
-
-    well_data = {
+    well_data ={
         "uwi": row["uwi"],
         "licensee": row["licensee"],
         "latitude": row["latitude"],
         "longitude": row["longitude"],
         "status": row["status"]
     }
-    upsert_well(db, well_data)
+    batch.append(well_data)
 
-    count += 1
-
-    if count == 1000:
-        count = 0
+    if len(batch) == 1000:
+        upsert_well(db, batch)
         db.commit()
-
+        batch = []
+    
+if batch:
+    upsert_well(db, batch)
 db.commit()

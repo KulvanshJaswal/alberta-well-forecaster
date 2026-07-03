@@ -52,31 +52,26 @@ def download_petrinex_files():
 
 
 def ingest_petrinex_files():
-    output_dir = "../data/petrinex"
+    output_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "petrinex")
     db = next(get_db())
 
     uwi_lookup = {}
-
     for (uwi,) in db.query(Well.uwi).all():
-        petrinex_key = uwi_to_petrinex(uwi)
-        uwi_lookup[petrinex_key] = uwi
-    
+        uwi_lookup[uwi_to_petrinex(uwi)] = uwi
+
     print("done with making uwi_lookup")
 
     for filename in os.listdir(output_dir):
         if not filename.endswith(".CSV"):
             continue
 
-        print(f"Processing {filename}...")
+        print(f"Processing {filename}")
         df = pd.read_csv(f"{output_dir}/{filename}", low_memory=False)
 
-
-        commit_counter = 0
+        batch = []
 
         for index, row in df.iterrows():
-            
             petrinex_id = str(row["FromToID"]).strip()
-
             if petrinex_id not in uwi_lookup:
                 continue
 
@@ -89,30 +84,41 @@ def ingest_petrinex_files():
 
             volume = row["Volume"] if pd.notna(row["Volume"]) else 0.0
 
-            existing = db.query(Production).filter(
-                Production.uwi == uwi,
-                Production.month == month
-            ).first()
+            batch.append({
+                "uwi": uwi,
+                "month": month,
+                "oil": volume if product == "oil" else None,
+                "gas": volume if product == "gas" else None,
+                "water": volume if product == "water" else None,
+            })
 
-            if existing:
-                setattr(existing, product, volume)
-                commit_counter += 1
-            else:
-                new_record = Production(
-                    uwi=uwi,
-                    month=month,
-                    oil=volume if product == "oil" else 0.0,
-                    gas=volume if product == "gas" else 0.0,
-                    water=volume if product == "water" else 0.0
+            if len(batch) == 1000:
+                stmt = insert(Production).values(batch)
+                stmt = stmt.on_conflict_do_update(
+                    index_elements=['uwi', 'month'],
+                    set_={
+                        'oil': func.coalesce(stmt.excluded.oil, Production.oil),
+                        'gas': func.coalesce(stmt.excluded.gas, Production.gas),
+                        'water': func.coalesce(stmt.excluded.water, Production.water),
+                    }
                 )
-                db.add(new_record)
-                commit_counter += 1
-            
-            if commit_counter == 1000:
-                commit_counter = 0
+                db.execute(stmt)
                 db.commit()
+                batch = []
 
-    db.commit()
+        if batch:
+            stmt = insert(Production).values(batch)
+            stmt = stmt.on_conflict_do_update(
+                index_elements=['uwi', 'month'],
+                set_={
+                    'oil': func.coalesce(stmt.excluded.oil, Production.oil),
+                    'gas': func.coalesce(stmt.excluded.gas, Production.gas),
+                    'water': func.coalesce(stmt.excluded.water, Production.water),
+                }
+            )
+            db.execute(stmt)
+            db.commit()
+
     db.close()
     print("Ingestion complete.")
 
