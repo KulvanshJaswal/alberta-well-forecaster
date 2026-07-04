@@ -24,7 +24,7 @@ def uwi_to_petrinex(uwi: str) -> str:
 
 
 def download_petrinex_files():
-    output_dir = "../data/petrinex"
+    output_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "petrinex")
     
     if os.path.exists(output_dir):
         shutil.rmtree(output_dir)
