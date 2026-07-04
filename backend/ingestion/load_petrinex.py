@@ -68,7 +68,7 @@ def ingest_petrinex_files():
         print(f"Processing {filename}")
         df = pd.read_csv(f"{output_dir}/{filename}", low_memory=False)
 
-        batch = []
+        aggregated = {}
 
         for index, row in df.iterrows():
             petrinex_id = str(row["FromToID"]).strip()
@@ -84,14 +84,15 @@ def ingest_petrinex_files():
 
             volume = row["Volume"] if pd.notna(row["Volume"]) else 0.0
 
-            batch.append({
-                "uwi": uwi,
-                "month": month,
-                "oil": volume if product == "oil" else None,
-                "gas": volume if product == "gas" else None,
-                "water": volume if product == "water" else None,
-            })
+            key = (uwi, month)
+            if key not in aggregated:
+                aggregated[key] = {"uwi": uwi, "month": month, "oil": None, "gas": None, "water": None}
 
+            aggregated[key][product] = volume
+
+        batch = []
+        for row_data in aggregated.values():
+            batch.append(row_data)
             if len(batch) == 1000:
                 stmt = insert(Production).values(batch)
                 stmt = stmt.on_conflict_do_update(
