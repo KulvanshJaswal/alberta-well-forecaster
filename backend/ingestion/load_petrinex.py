@@ -24,7 +24,7 @@ def uwi_to_petrinex(uwi: str) -> str:
 
 
 def download_petrinex_files():
-    output_dir = "../data/petrinex"
+    output_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "petrinex")
     
     if os.path.exists(output_dir):
         shutil.rmtree(output_dir)
@@ -153,7 +153,8 @@ def cleanup_old_months():
         db.execute(text("DELETE FROM production WHERE month = (SELECT MIN(month) FROM production);"))
 
     db.commit()
-    db.execute(text("VACUUM FULL production;"))
+    with db.bind.connect().execution_options(isolation_level="AUTOCOMMIT") as conn:
+        conn.execute(text("VACUUM FULL production;"))
     db.close()
 
 if __name__ == "__main__":
