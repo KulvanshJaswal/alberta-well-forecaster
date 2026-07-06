@@ -6,9 +6,9 @@ def arps_equation(t, qi, Di, b):
     return qi / (1 + b * Di * t)**(1/b)
 
 def fit_decline_curve(production_data):
-    oil_data = [r for r in production_data if r.oil > 0]
-    gas_data = [r for r in production_data if r.gas > 0]
-    water_data = [r for r in production_data if r.water > 0]
+    oil_data = [r for r in production_data if r.oil is not None and r.oil > 0]
+    gas_data = [r for r in production_data if r.gas is not None and r.gas > 0]
+    water_data = [r for r in production_data if r.water is not None and r.water > 0]
 
     results = {}
 
