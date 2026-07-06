@@ -33,9 +33,9 @@ Built as a portfolio project targeting Calgary oil & gas internships.
 
 ```
 AER ST37 (shapefile + WellList.txt)
-        ↓ load_st37.py (auto-download + upsert)
+        ↓ load_st37.py (auto-download + bulk upsert)
 Petrinex Volumetric CSVs (18 months, auto-downloaded via public API)
-        ↓ load_petrinex.py (gap-based rolling window, batch commits)
+        ↓ load_petrinex.py (pre-aggregated bulk upsert, 30min full refresh)
 Neon PostgreSQL (wells + production tables, ~2.3M production rows)
         ↓ FastAPI (SQLAlchemy ORM, Alembic migrations)
 Azure Web App (Docker container, East US 2)
@@ -54,6 +54,15 @@ React (Vercel) → Recharts charts + Leaflet map
 - **~16% of active (PUMP) wells show no production data.** Investigation confirmed this reflects Petrinex's facility-level reporting architecture: many operators report combined volumes at a shared battery (`ABBT`) rather than per individual wellhead. Properly attributing battery-level volumes to individual wells requires production allocation — a domain-specific problem that dedicated O&G accounting software (Quorum, Pandell) solves using periodic well test data not available in public datasets.
 - **Neon cold-start latency.** The database scales to zero when idle; the first request after a period of inactivity may take 2–5 seconds while Neon wakes up. SQLAlchemy connection pooling (`pool_pre_ping`, `pool_recycle=300`) mitigates mid-session drops.
 - **18-month rolling window.** Petrinex data is trimmed to 18 months to fit within hosting constraints. The automated quarterly refresh maintains this window, deleting the oldest month and adding the newest available.
+
+## Performance Engineering
+
+The Petrinex ingestion originally ran row-by-row with a separate SELECT before each INSERT/UPDATE — 4.6 million individual database round trips for 2.3M rows. After profiling the bottleneck, I rewrote the ingestion to:
+
+1. Pre-aggregate all fluid types (oil/gas/water) per `uwi+month` in memory before any database writes
+2. Bulk-execute 1,000 pre-aggregated rows per round trip using `INSERT ... ON CONFLICT DO UPDATE` with `COALESCE` to preserve existing fluid values
+
+Result: full 18-month refresh went from **10+ days to 30 minutes** — a ~500x speedup.
 
 ## O&G Domain Context
 
@@ -79,4 +88,4 @@ uvicorn app.main:app --reload
 ## CI/CD
 
 - **On push to `main`:** GitHub Actions builds the Docker image and pushes to Azure Container Registry; Azure Web App pulls and redeploys automatically.
-- **Quarterly (1st of Jan/Apr/Jul/Oct):** GitHub Actions runs `load_st37.py` and `load_petrinex.py` against the live Neon database, refreshing all well metadata and rolling the production window forward by one month.
+- **Quarterly (1st of Jan/Apr/Jul/Oct):** GitHub Actions runs `load_st37.py` then `load_petrinex.py` sequentially against the live Neon database, refreshing all well metadata and rolling the production window forward.
