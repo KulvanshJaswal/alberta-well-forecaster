@@ -68,7 +68,7 @@ export default function WellMap({ wells }) {
         style={{ height: '100%', width: '100%' }}
       >
         <TileLayer
-          url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+          url={`https://basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}{r}.png?key=${process.env.REACT_APP_CARTO_API_KEY}`}
           attribution='&copy; <a href="https://carto.com/">CARTO</a>'
         />
         <MarkerClusterGroup>
