@@ -62,7 +62,9 @@ The Petrinex ingestion originally ran row-by-row with a separate SELECT before e
 1. Pre-aggregate all fluid types (oil/gas/water) per `uwi+month` in memory before any database writes
 2. Bulk-execute 1,000 pre-aggregated rows per round trip using `INSERT ... ON CONFLICT DO UPDATE` with `COALESCE` to preserve existing fluid values
 
-Result: full 18-month refresh went from **10+ days to 30 minutes** — a ~500x speedup.
+**Results:**
+- **Initial historical backfill** (loading the full dataset from scratch): row-by-row inserts took 10+ days to complete.
+- **Routine refresh** (`refresh-data` workflow, incremental monthly updates): the original row-by-row approach exceeded GitHub Actions' 6-hour job limit without completing. The rewritten pipeline completes the same refresh in about 30 minutes — roughly a 12x speedup on the operation that actually runs on a recurring schedule.
 
 ## O&G Domain Context
 
